@@ -11,7 +11,10 @@ namespace WorkWithYandexDisk
 
             YandexDisk yd = new YandexDisk();
             yd.ShowSetting();
-            await yd.GetResources("disk:/newMetFolder");
+            await yd.GetResources("disk:/newMetFolder/XXX");
         }
     }
 }
+
+
+    
