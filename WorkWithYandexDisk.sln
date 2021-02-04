@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkWithYandexDisk", "WorkWithYandexDisk\WorkWithYandexDisk.csproj", "{9548215E-49EC-402B-B681-C71E8E637EA8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9548215E-49EC-402B-B681-C71E8E637EA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9548215E-49EC-402B-B681-C71E8E637EA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9548215E-49EC-402B-B681-C71E8E637EA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9548215E-49EC-402B-B681-C71E8E637EA8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {20C82200-B127-41C1-801A-41D80F784D69}
+	EndGlobalSection
+EndGlobal
