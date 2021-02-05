@@ -21,7 +21,7 @@ namespace WorkWithYandexDisk
         private readonly string oAuthToken = "AgAAAABQWsjJAADLW0VGaust6UwNu5ku8ec3xEw";
         private readonly string oAuthTokenWrong = "AgAAAABQWsjJAADLW0VGaust6UwNu5ku8ec3xEwbv";
         private readonly string urlDiskApi = $"https://cloud-api.yandex.net/v1/disk";
-        
+        private readonly object ConsoleLock = new object();
         private static readonly HttpClient client = new HttpClient();
 
         public YandexDisk()
@@ -72,7 +72,6 @@ namespace WorkWithYandexDisk
             }
         }
 
-
         public async Task GetResourcesDownload(string pathFile)
         {
             try
@@ -104,77 +103,79 @@ namespace WorkWithYandexDisk
             }
         }
 
-
-        public async Task GetResourcesUpload(string pathFile, string urlLink)
+        public async Task GetResourcesUpload(int numLine, string pathFile, string urlLink)
         {
+            int left=0;
+            int num=0;
             try
             {
+                //Запрос на url по которому будет загружаться файл
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, urlDiskApi + "/resources/upload?path=" + urlLink);
                 var response = await client.SendAsync(request);
                 UploadLink answer = JsonConvert.DeserializeObject<UploadLink>(await response.Content.ReadAsStringAsync());
                 try
                 {
+                    //загрузка файла
                     WebClient wclient = new WebClient();
                     wclient.Credentials = CredentialCache.DefaultCredentials;
                     wclient.UploadFileAsync(new Uri(answer.href), "PUT", pathFile);
-                    //wclient.Dispose();
 
-                    Console.Write(Environment.NewLine + "Downloading: " + pathFile + " Status: ");
-                    var left1 = Console.CursorLeft;
-                    var top1 = Console.CursorTop;
-                    Console.CursorVisible = false;
+                    lock (ConsoleLock)
+                    {
+                        Console.SetCursorPosition(0, numLine);
+                        Console.Write("File: " + pathFile + " Status: ");
+                        left = Console.CursorLeft;
+                    }
 
+                    //опрос состояния загрузки файла и вывод на экран
                     while (true)
                     {
                         request = new HttpRequestMessage(HttpMethod.Get, urlDiskApi + "/operations/" + answer.operation_id);
                         response = await client.SendAsync(request);
                         GetOperations statusOperationId = JsonConvert.DeserializeObject<GetOperations>(await response.Content.ReadAsStringAsync());
-                        
-                        Console.SetCursorPosition(left1, top1);
-                        Console.WriteLine(statusOperationId.status + "    ");
+                        lock (ConsoleLock) 
+                        {
+                            Console.SetCursorPosition(left, numLine);
+                            Console.Write(num++ + " sec: " + statusOperationId.status + "    ");
+                        }
                         if (statusOperationId.status != "in-progress") break;
-
                         Thread.Sleep(1000);
                     }
-                    
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("GetResourcesUpload ex.Message: " + ex.Message);
+                    Console.WriteLine("Exception ex.Message: " + ex.Message);
                 }
-
-                //Console.WriteLine(Environment.NewLine + "Ответ на получении ссылки на закачивание на сервер: " + response.StatusCode);
-                //Console.WriteLine($"File " + pathFile + " downloaded to " + urlLink);
-                //Console.WriteLine("Ссылка на скачивание: " + answer.href);
 
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine("GetResourcesUpload ex.Message: " + ex.Message);
+                Console.WriteLine("HttpRequestException ex.Message: " + ex.Message);
             }
         }
 
 
 
-        public async Task ParallellUploadFiles(string pathDir, string urlLink)
+        public async Task ParallellUploadFiles(string pathDir, string urlLink, bool overwrite)
         {
+            string options = "";
             if (!Directory.Exists(pathDir)) return;
+            if (overwrite) options = "&overwrite = true";
             string[] filesFullname = Directory.GetFiles(pathDir);
             string[] filesName = new DirectoryInfo(pathDir).GetFiles().Select(o => o.Name).ToArray();
 
-            //существует ли папка/urlLink // её создание
-
+            IList<Task> tasks = new List<Task>();
+            Console.WriteLine("Uploadnig files:");
+            Console.CursorVisible = false;
+            int numLine = Console.CursorTop;
             for (int i = 0; i < filesName.Length; i++)
             {
-                Console.WriteLine("ParallellUploadFiles begin ");
-                await GetResourcesUpload(filesFullname[i], urlLink + "/" + filesName[i]);
-                Console.WriteLine("ParallellUploadFiles end");
+                tasks.Add(GetResourcesUpload(numLine++, filesFullname[i], urlLink + "/" + filesName[i] + options));
             }
-
-            Console.WriteLine("ParallellUploadFiles");
-
+            await Task.WhenAll(tasks);
+            Console.SetCursorPosition(0, numLine);
+            Console.WriteLine("copy End!");
         }
-
 
     }
 }
