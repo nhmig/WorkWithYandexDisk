@@ -7,19 +7,20 @@ namespace WorkWithYandexDisk
     {
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-
             YandexDisk yd = new YandexDisk();
             yd.ShowSetting();
-            //await yd.GetResources("disk:/SecretFolder");
 
-            //await yd.PutResources("disk:/SecretFolder/nFolder");
+            if (args.Length < 2)
+            {
+                Console.WriteLine("Нет входных данных");
+                return;
+            }
 
-            //await yd.GetResourcesDownload("disk:/Test/Горы.jpg");
+            //string pathDir =  @"C:\Test_Desktop";
+            //string urlLink = "disk:/SecretFolder/TopSecret";
 
-            //await yd.GetResourcesUpload(@"C:\Test_Desktop\Asp.netCore3.1.pdf", "disk:/SecretFolder/Asp.netCore3.1.pdf&overwrite=true");
-
-            await yd.ParallellUploadFiles(@"C:\Test_Desktop", "disk:/SecretFolder/TopSecret");
+            await yd.ParallellUploadFiles(args[0], args[1], true);
+            Console.ReadKey();
         }
     }
 }
